@@ -1,0 +1,69 @@
+clear all; clc;
+
+% Assume Ideal GPS orbit characteristics
+% also just assume the location of the user is on the Northern Hemisphere
+% with a random latitude in the given range at Greenwich. Assume observer 
+% is at sea-level.
+
+mu = 398600;
+a = 26560; %Km
+e = 0;
+i = 55; %Degrees
+period = 43082; %seconds
+eastLongitude = 0; %degrees
+latitude = 45; %degrees
+
+% Given values for problem 1
+elevation = 0; %degrees
+azimuth = 25; %degrees
+
+
+% Convert UTC and DOY to a Julian date, Assume year is 2000, since it
+% doesn't matter too much because the problem is ambigious
+
+year = 2000;
+month = 3; %March
+day = 1;
+hour = 7.75;
+
+localSiderealTime = convertUTCAndDOYToSiderealTimeInDegreesAtGreenwich(...
+    year, month, day, hour);
+
+[RUnitSat, rightAscension, declination] = elevationAndAzimuthToRAandDec...
+    (eastLongitude, latitude, elevation, azimuth,localSiderealTime);
+
+RVec = a*RUnitSat;
+
+% Angular Momentum for a circular orbit can be expressed by:
+angularMomentum = sqrt(a*mu);
+
+% Since the satellite is rising from the north west from the observer, it
+% will be heading south and thus the Right Ascension of the Ascending node can
+% be aproximiated from the right ascension angle calculated from above,
+% except adding 180 degrees because it's retrograde.
+
+if rightAscension < 180
+    RAAN = rightAscension + 180;
+else
+    RAAN = rightAscension - 180;
+end
+
+% We can also say that the satellite has no Radial Velocity since it's a
+% circular orbit (e = 0), so the scalar unit of velocity can be expressed:
+
+V = angularMomentum / a;
+
+% Since this is a circular orbit we can also assume argument of perigee 
+% doesn't really matter, so I'll just say it's 0 to make things easier.
+
+argumentOfPerigee = 0; %degrees
+
+Rperifocal = stateVectorToPerifocalFrame(RVec, RAAN, i, argumentOfPerigee)
+
+% using the perifocal transformation and equation 4.45 in the Curtis Text,
+% We can find the True anomaly
+Rperifocal(1)
+
+trueAnomaly = acosd(Rperifocal(1)*mu/angularMomentum^2))
+
+

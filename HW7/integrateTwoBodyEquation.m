@@ -1,0 +1,87 @@
+function [R,V,tfin] = integrateTwoBodyEquation(r0, v0, revolutions, isWithDrag)
+
+% Parameters of the system
+mu = 398600; 
+
+% Set the time range
+t0 = 0;     % Initial time [s]
+tf = 999999;    % Final time [s]
+
+X0 = [r0;v0];
+
+% Set up the options
+options = odeset('Events',@events,'AbsTol',1E-10,'RelTol',1E-10);
+
+% Call the integrator for inital setup
+if isWithDrag
+    [t,r] = ode45(@integrator,[t0,tf],X0,options,mu);
+else
+    [t,r] = ode45(@dragIntegrator,[t0,tf],X0,options,mu);
+end
+% Do something with the output
+
+R = r(:,1:3);
+V = r(:,4:6);
+r0 = r(end,1:3);
+v0 = r(end,4:6);
+
+X0 = [r0';v0'];
+t0 = t(end);
+tfin = t;
+
+%Call the integrator for each revolution
+for i = 2:revolutions
+    if isWithDrag
+        [t,r] = ode45(@integrator,[t0,tf],X0,options,mu);
+    else
+        [t,r] = ode45(@dragIntegrator,[t0,tf],X0,options,mu);
+    end
+    R = [R; r(:,1:3)];
+    V = [V; r(:,4:6)];
+
+    r0 = r(end,1:3);
+    v0 = r(end,4:6);
+
+    X0 = [r0';v0'];
+    t0 = t(end);
+    tfin = [tfin; t];
+end
+
+
+%Ideal Integrator
+function [dX] = integrator(t,X, mu)
+dX = zeros(2,1);
+
+R = X(1:3);
+V = X(4:6);
+
+dV = -(mu/(norm(R)^3))*R;
+
+dX(1:3) = V;
+dX(4:6) = dV;
+
+
+%Drag Integrator 
+function [dX] = dragIntegrator(t,X, mu)
+dX = zeros(2,1);
+
+AMRatio = 0.01*(1/1000^2); %km^2/kg
+Cd = 2;
+atmosDensity = 4e-13 * (1000^3); %kg/km^3
+
+R = X(1:3);
+V = X(4:6);
+
+dV = -(mu/(norm(R)^3))*R - (1/2)*Cd*AMRatio*atmosDensity*norm(V)*V;
+
+dX(1:3) = V;
+dX(4:6) = dV;
+
+
+% 
+function [value,isterminal,direction] = events(t,r,mu)
+
+R = r(1:3);
+value = R(2);     % detect a full revolution
+isterminal = 1;   % stop the integration
+direction = 1;   % don't switch directions

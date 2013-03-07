@@ -1,0 +1,134 @@
+clear all; clc;
+
+a = 6978; %KM
+e = 0;
+i = 97.7; %Degrees
+perigee = 0; %Degrees
+trueAnomalyVec = 0:1:359;
+RAANVec = [0,90,180,270];%0:360/365:359;
+earthRad = 6371; %KM
+
+mu = 398600;
+
+n = sqrt(mu/a^3);
+period = 2*pi/n;
+
+maxCounterInEclipse = 0;
+dayOfMaxEclipse = 0;
+%Find any eclipse
+for RAAN = RAANVec
+
+    degreeOfSunECI = mod(RAAN + 90, 360); % degrees, works because this is sun-synch.
+    
+    dayOfYear = RAAN*365/360;
+    
+    uSunX = cosd(degreeOfSunECI);
+    uSunY = cosd(23.44)*sind(degreeOfSunECI);
+    uSunZ = sind(23.44)*sind(degreeOfSunECI);                        
+    uSun = [uSunX,uSunY,uSunZ];
+    RAAN
+    uSunNorm = uSun./norm(uSun)
+
+%     counterOfDegreesInEclipse = 0;
+%     for trueAnomaly = trueAnomalyVec
+%         [rX, rY, rZ] = RightAscnFrameToECI(a,i,e,RAAN,perigee,trueAnomaly);
+%         rSat = [rX, rY, rZ];
+%         rSatNorm = norm(rSat);
+%         cosineAlpha = dot(uSunNorm, rSat)/rSatNorm;
+%         
+%         
+%         
+%         if(cosineAlpha < 0)
+%             sineAlpha = 1-cosineAlpha^2;
+%             if(rSatNorm*sineAlpha < earthRad);
+%                 counterOfDegreesInEclipse = counterOfDegreesInEclipse + 1;
+%                 %fprintf('Found possible satellite eclipse at day %d of year at trueAnomaly: %d\n', dayOfYear, trueAnomaly);
+%             end
+%         end
+%     end
+%     if counterOfDegreesInEclipse > 0
+%        fprintf('Found possible satellite eclipse at day %d of year\n', dayOfYear);   
+%     end
+%     if maxCounterInEclipse < counterOfDegreesInEclipse
+%         maxCounterInEclipse = counterOfDegreesInEclipse;
+%         dayOfMaxEclipse = dayOfYear;
+%     end
+
+end
+
+
+MaxTimeSpentInEclipse = maxCounterInEclipse*(period/360)
+
+
+
+
+% %Vernal Equinox
+% uSun = [1,0,0];
+% RAAN = 270;
+% 
+% for trueAnomaly = trueAnomalyVec
+%     [rX, rY, rZ] = RightAscnFrameToECEF(a,i,e,RAAN,perigee,trueAnomaly);
+%     rSat = [rX, rY, rZ];
+%     rSatNorm = norm(rSat);
+%     cosineAlpha = dot(uSun, rSat)/rSatNorm;
+%     if(cosineAlpha < 0)
+%         sineAlpha = 1-cosineAlpha^2;
+%         if(rSatNorm*sineAlpha < earthRad);
+%             fprintf('Found possible satellite eclipse during Vernal Equinox at trueAnomaly = %d\n', trueAnomaly);
+%         end
+%     end
+% end
+% 
+% %Summer Solstice
+% uSun = [0,0.69,0.31];
+% RAAN = 0;
+% 
+% for trueAnomaly = trueAnomalyVec
+%     [rX, rY, rZ] = RightAscnFrameToECEF(a,i,e,RAAN,perigee,trueAnomaly);
+%     rSat = [rX, rY, rZ];
+%     rSatNorm = norm(rSat);
+%     cosineAlpha = dot(uSun, rSat)/rSatNorm;
+%     if(cosineAlpha < 0)
+%         sineAlpha = 1-cosineAlpha^2;
+%         if(rSatNorm*sineAlpha < earthRad);
+%             fprintf('Found possible satellite eclipse during Summer Solstice at trueAnomaly = %d\n', trueAnomaly);
+%         end
+%     end
+%     
+% end
+% 
+% %Autumnal Equinox
+% uSun = [-1,0,0];
+% RAAN = 90;
+% 
+% for trueAnomaly = trueAnomalyVec
+%     [rX, rY, rZ] = RightAscnFrameToECEF(a,i,e,RAAN,perigee,trueAnomaly);
+%     rSat = [rX, rY, rZ];
+%     rSatNorm = norm(rSat);
+%     cosineAlpha = dot(uSun, rSat)/rSatNorm;
+%     if(cosineAlpha < 0)
+%         sineAlpha = 1-cosineAlpha^2;
+%         if(rSatNorm*sineAlpha < earthRad);
+%             fprintf('Found possible satellite eclipse during Autumnal Equinox at trueAnomaly = %d\n', trueAnomaly);
+%         end
+%     end
+%     
+% end
+% 
+% %Winter Solstice
+% uSun = [0,-0.69,-0.31];
+% RAAN = 180;
+% 
+% for trueAnomaly = trueAnomalyVec
+%     [rX, rY, rZ] = RightAscnFrameToECEF(a,i,e,RAAN,perigee,trueAnomaly);
+%     rSat = [rX, rY, rZ];
+%     rSatNorm = norm(rSat);
+%     cosineAlpha = dot(uSun, rSat)/rSatNorm;
+%     if(cosineAlpha < 0)
+%         sineAlpha = 1-cosineAlpha^2;
+%         if(rSatNorm*sineAlpha < earthRad);
+%             fprintf('Found possible satellite eclipse during Winter Solstice at trueAnomaly = %d\n', trueAnomaly);
+%         end
+%     end
+%     
+% end
